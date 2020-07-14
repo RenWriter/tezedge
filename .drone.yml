@@ -57,6 +57,9 @@ steps:
     - cargo build --release --workspace
     - cargo test --release --workspace
     # build and run special tests
+    - export RUSTFLAGS=-Zsanitizer=address RUSTDOCFLAGS=-Zsanitizer=address
+    - export LSAN_OPTIONS=verbosity=1:log_threads=1
+    - export ASAN_OPTIONS=abort_on_error=1:report_objects=1:sleep_before_dying=1
     - export LD_LIBRARY_PATH=./tezos/interop/lib_tezos/artifacts
     - export PROTOCOL_RUNNER=/drone/src/target/release/protocol-runner
     - cargo test --package shell --release -- --nocapture --ignored test_mutliple_protocol_runners_with_one_write_multiple_read_init_context
@@ -96,6 +99,7 @@ trigger:
   branch:
     - master
     - develop
+    - feature/memory
 
 ##############################################################################################################
 # This pipeline test the sandbox and its rpc sercver
@@ -399,6 +403,7 @@ trigger:
   branch:
     - master
     - develop
+    - feature/memory
 
 depends_on:
   - build-and-tests
@@ -671,6 +676,9 @@ steps:
   commands:
     - PEERS=$(cat /artifacts/ocaml_ip1.txt | awk '{print $1 ","}')$(cat /artifacts/ocaml_ip2.txt | awk '{print $1 ","}')$(cat /artifacts/ocaml_ip3.txt | awk '{print $1 ","}')$(cat /artifacts/ocaml_ip4.txt)
     - echo "peers - $PEERS"
+    - export RUSTFLAGS=-Zsanitizer=address RUSTDOCFLAGS=-Zsanitizer=address
+    - export LSAN_OPTIONS=verbosity=1:log_threads=1
+    - export ASAN_OPTIONS=abort_on_error=1:report_objects=1:sleep_before_dying=1
     - cp /artifacts/protocol-runner /tmp/tezedge_developer/
     - rust_libs=$(echo "`rustup show home`/toolchains/`rustup show active-toolchain | tr " " "\n" | head -1`/lib")
     - export LD_LIBRARY_PATH="/artifacts/ffi:$rust_libs"
